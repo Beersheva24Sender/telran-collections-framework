@@ -84,4 +84,15 @@ public abstract class AbstractMap<K, V> implements Map<K, V> {
         return set.isEmpty();
     }
 
+    @Override
+    public V remove (K key) {
+        Entry<K, V> entry = getEntry(key);
+        V res = null;
+        if (entry != null) {
+            set.remove(entry);
+            res = entry.getValue();
+        }
+        return res;
+    }
+
 }

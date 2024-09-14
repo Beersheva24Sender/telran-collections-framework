@@ -4,7 +4,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 @SuppressWarnings("unchecked")
-public class TreeSet<T> implements Set<T> {
+public class TreeSet<T> implements SortedSet<T> {
     private static class Node<T> {
         T obj;
         Node<T> parent;
@@ -48,20 +48,31 @@ public class TreeSet<T> implements Set<T> {
     private Node<T> root;
     private Comparator<T> comparator;
     int size;
+    private String printingSymbol = " ";
+    private int symbolsPerLevel = 2;
     public TreeSet(Comparator<T> comparator) {
         this.comparator = comparator;
     } 
     
     public TreeSet() {
-        this((Comparator<T>)Comparator.naturalOrder());
+        this((Comparator<T>) Comparator.naturalOrder());
     }
+
+    public void setPrintingSymbol(String printingSymbol) {
+        this.printingSymbol = printingSymbol;
+    }
+
+    public void setSymbolsPerLevel(int symbolsPerLevel) {
+        this.symbolsPerLevel = symbolsPerLevel;
+    }
+
     @Override
     public boolean add(T obj) {
         boolean res = false;
         if (!contains(obj)) {
             res = true;
             Node<T> node = new Node<>(obj);
-            if(root == null) {
+            if (root == null) {
                 addRoot(node);
             } else {
                 addAfterParent(node);
@@ -216,4 +227,119 @@ private Node<T> getNextCurrent(Node<T> current) {
 		node.parent = node.left = node.right = null;
 		
 	}
+    @Override
+    public T first() {
+        if (root == null) {
+            throw new NoSuchElementException();
+
+        }
+        return getLeastFrom(root).obj;
+    }
+
+    @Override
+    public T last() {
+        if (root == null) {
+            throw new NoSuchElementException();
+
+        }
+        return getGreatestFrom(root).obj;
+    }
+
+    @Override
+    public T floor(T key) {
+        return floorCeilingObj(key, true);
+    }
+
+    @Override
+    public T ceiling(T key) {
+        return floorCeilingObj(key, false);
+    }
+
+    @Override
+    public SortedSet<T> subSet(T keyFrom, T keyTo) {
+        if (comparator.compare(keyFrom, keyTo) > 0) {
+            throw new IllegalArgumentException();
+        }
+        TreeSet<T> subTree = new TreeSet<>(comparator);
+        Node<T> ceilingNode = floorCeilingNode(keyFrom, false);
+        Node<T> current = ceilingNode;
+        while (current != null && comparator.compare(current.obj, keyTo) < 0) {
+            subTree.add(current.obj);
+            current = getNextCurrent(current);
+        }
+        return subTree;
+    }
+
+    private Node<T> floorCeilingNode(T key, boolean isFloor) {
+        Node<T> res = null;
+        int compRes = 0;
+        Node<T> current = root;
+        while (current != null && (compRes = comparator.compare(key, current.obj)) != 0) {
+            if ((compRes < 0 && !isFloor) || (compRes > 0 && isFloor)) {
+                res = current;
+            }
+            current = compRes < 0 ? current.left : current.right;
+        }
+        return current == null ? res : current;
+
+    }
+
+    private T floorCeilingObj(T key, boolean isFloor) {
+        T res = null;
+        Node<T> node = floorCeilingNode(key, isFloor);
+        if (node != null) {
+            res = node.obj;
+        }
+        return res;
+    }
+
+    public void displayTreeRotated() {
+        displayTreeRotated(root, 0);
+    }
+
+    public void displayTreeParentChildren() {
+        // TODO
+    }
+
+    public int width() {
+        return width(root);
+    }
+
+    private int width(Node<T> root) {
+        int res = 0;
+        if (root != null) {
+            res = root.left == null && root.right == null ? 1 : width(root.left) + width(root.right);
+        }
+        return res;
+    }
+
+    public int height() {
+       return height(root);
+    }
+
+    private int height(Node<T> root) {
+        int res = 0;
+        if (root != null) {
+            int heightLeft = height(root.left);
+            int heightRight = height(root.right);
+            res = 1 + Math.max(heightLeft, heightRight);
+        }
+        return res;
+    }
+
+    public void inversion() {
+
+    }
+
+    private void displayTreeRotated(Node<T> root, int level) {
+        if (root != null) {
+            displayTreeRotated(root.right, level + 1);
+            displayRootObject(root.obj, level);
+            displayTreeRotated(root.left, level + 1);
+        }
+    }
+
+    private void displayRootObject(T obj, int level) {
+        System.out.printf("%s%s\n", printingSymbol.repeat(level * symbolsPerLevel), obj);
+    }
 }
