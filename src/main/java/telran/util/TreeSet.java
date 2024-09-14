@@ -328,9 +328,24 @@ private Node<T> getNextCurrent(Node<T> current) {
     }
 
     public void inversion() {
-
+        root = invert(root);
     }
-
+    
+    private Node<T> invert(Node<T> node) {
+        if (node == null) {
+            return null;
+        }
+    
+        Node<T> temp = node.left;
+        node.left = node.right;
+        node.right = temp;
+    
+        invert(node.left);
+        invert(node.right);
+    
+        return node;
+    }
+    
     private void displayTreeRotated(Node<T> root, int level) {
         if (root != null) {
             displayTreeRotated(root.right, level + 1);
